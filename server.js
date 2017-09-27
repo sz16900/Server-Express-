@@ -1,13 +1,17 @@
-var words = {
-	"flowers": 5,
-	"obama": 3,
-	"trump": -5 //sad word
-}
+// Import the file system packages
+var fs = require('fs');
+// Import express
+var express = require('express');
 
+// raw data
+// Use a synchronus or "block" to wait for this to finish to continue. This is helpful
+// at the start of the server because we want all of the file to load before continuing
+var data = fs.readFileSync('words.json');
+
+// parse it to json
+var words = JSON.parse(data);
 
 console.log("Hello World");
-
-var express = require('express');
 
 var app = express();
 
@@ -33,20 +37,30 @@ function addWord(request, response) {
 	var word = data.word;
 	var score = Number(data.score);
 	var reply;
+
 	if (!score) {
-		reply = {
+		var reply = {
 		msg: "Score is required!"
 		}
+		response.send(reply);	
 	} 
 	else {
 		// word is the key score is the value
 		words[word] = score;
-		reply = {
-		msg: "Thank you for your word"
+		// Turn it into a string 
+		var data = JSON.stringify(words, null, 2);
+		// write too file ( all of it :/ )
+		fs.writeFile('words.json', data, finished);
+
+		function finished(err) {
+			reply = {
+				word: word,
+				score: score,
+				status: "success"		
+			}
+			response.send(reply);
 		}
 	}
-
-	response.send(reply);	
 }
 
 
